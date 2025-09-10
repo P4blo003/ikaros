@@ -1,0 +1,42 @@
+# ------------------------------
+# Go
+# ------------------------------
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+vendor/
+
+# IDEs
+.idea/
+.vscode/
+
+# ------------------------------
+# Python
+# ------------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pycache/
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+*.log
+
+# Virtual environments
+venv/
+env/
+ENV/
+.env
+
+# ------------------------------
+# System files
+# ------------------------------
+.DS_Store
+Thumbs.db
