@@ -1,0 +1,30 @@
+@startuml
+title "Flujo de Login de Usuarios"
+
+actor User as user
+participant "Client" as client
+participant "API Gateway" as gateway
+participant "AUTH Service" as auth
+participant "DB Service" as db
+database "UserDB" as userDB
+
+user -> client: Introduce credenciales
+client -> gateway: POST (username + password)
+gateway -> auth: Delega autenticación
+auth -> db: Solicita usuario por username
+db -> userDB: Consulta usuario
+userDB -> db: Devuelve hash almacenado + salt
+db -> auth: Devuelve hash + salt
+
+auth -> auth: Verifica password
+alt Credenciales válidas
+  auth -> gateway: 200 + JWT
+  gateway -> client: 200 + JWT
+else Credenciales inválidas
+  auth -> gateway: 401\n("Credenciales inválidas")
+  gateway -> client: 401\n("Credenciales inválidas")
+end
+
+client->user: Muestra resultado de login
+
+@enduml
