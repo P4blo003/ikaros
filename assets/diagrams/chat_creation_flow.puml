@@ -29,4 +29,9 @@ else Correcto
   
 end
 
+legend top
+  <color:blue>REST/HTTP</color>
+  <color:purple>gRPC</color>
+end legend
+
 @end uml
