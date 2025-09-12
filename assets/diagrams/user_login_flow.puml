@@ -30,4 +30,9 @@ end
 
 client->user: Muestra resultado\nde login
 
+legend top
+  <color:blue>REST/HTTP</color>
+  <color:purple>gRPC</color>
+end legend
+
 @enduml
