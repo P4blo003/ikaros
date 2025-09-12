@@ -20,7 +20,7 @@ else Correcto
   auth-[#purple]>gateway: Correcto
   gateway->gateway: Genera session_id
   gateway->gateway: Registra session_id\ny Conexión SSE
-  gateway-[#blue]>client: HTTP 202\n(Cabeceras SSE, session_id)
+  gateway-[#blue]>client: HTTP 200\n(Cabeceras SSE, session_id)
   
   note right of client
     Se inicia conexión SSE cliente-servidor
