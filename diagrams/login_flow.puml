@@ -1,0 +1,33 @@
+@startuml
+
+title "Flujo de login de Usuario"
+
+actor User as user
+
+participant Client as client
+participant APIGateway as gateway
+participant AUTH as auth
+
+database USERS as usersDB
+database TOKENS as tokensDB
+
+user->client: Introduce las credenciales
+client-[#blue]>gateway: HTTPS POST\n(user + password)
+gateway-[#orange]>auth: Solicita autenticación\n(user + password)
+auth->usersDB: Busqueda de Usuario
+usersDB->auth: Devuelve resultado\n(hash + salt)
+auth->auth: Autentica usuario
+
+alt Autenticación Fallida
+  auth-[#orange]>gateway: Incorrecto
+  gateway-[#blue]>client: 401\nNo autorizado
+
+else Autenticación Exitosa
+  auth->auth: Genera JWT
+  auth->auth: Genera Refresh Token
+  auth->tokensDB: Almacena el token\n(Refresh Token)
+  auth-[#orange]>gateway: Correcto\n(JWT + Refresh Token)
+  gateway-[#blue]>client: 200\nAutorizado\n(JWT + Refresh Token)
+end
+
+@enduml
