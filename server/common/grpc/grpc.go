@@ -1,6 +1,8 @@
 package common
 
 import (
+	"context"
+	"log"
 	"net"
 	"strconv"
 	"time"
@@ -36,8 +38,8 @@ type GrpcServer struct {
 // FUNCIONES
 // ------------------------------
 
-// Crea un nuevo servdor gRPC.
-func CreateServer(cfg ServerConfig) (*GrpcServer, error) {
+// Inicializa un nuevo servidor gRPC.
+func InitServer(cfg ServerConfig) (*GrpcServer, error) {
 	// Genera la dirección.
 	addr := "localhost:" + strconv.Itoa(cfg.Port)
 
@@ -58,4 +60,56 @@ func CreateServer(cfg ServerConfig) (*GrpcServer, error) {
 		Listener: lis,
 		Config:   cfg,
 	}, nil
+}
+
+// ------------------------------
+// IMPLEMENTACIÓN
+// ------------------------------
+
+// Inicia el servidor gRPC.
+func (s *GrpcServer) Start() {
+	// Inicia gorutina.
+	go func() {
+		// Imprime información.
+		log.Printf("[%s] Servidor iniciado en %s", s.Config.ServiceName, s.Listener.Addr().String())
+		// Inicia el servicio en el puerto dado.
+		if err := s.Server.Serve(s.Listener); err != nil {
+			log.Printf("[%s] Error en servidor: %v", s.Config.ServiceName, err)
+		}
+	}()
+}
+
+// Detiene el servidor gRPC.
+func (s *GrpcServer) Stop() {
+	// Imprime información.
+	log.Printf("[%s] Iniciando apagado controlado...", s.Config.ServiceName)
+
+	// Crea un contexto con timeout.
+	ctx, cancel := context.WithTimeout(context.Background(), s.Config.MaxShutdownTime)
+	// Asegura que al salir de la función se liberen los recursos asociados.
+	defer cancel()
+
+	// Crea un canal sin buffer. Se usará como señal para indicar cuándo GracefulStop haya terminado.
+	done := make(chan struct{})
+	// Lanza gorutina.
+	go func() {
+		// Permite que las llamadas gRPC activas terminen.
+		s.Server.GracefulStop()
+		// Cierra el canal.
+		close(done)
+	}()
+
+	// Select para dos posibles casos.
+	select {
+	// Apagado ordenado.
+	case <-done:
+		// Imprime información.
+		log.Printf("[%s] Servidor detenido correctamente", s.Config.ServiceName)
+	// Apadado forzoso. (Si el timeout termina antes que la gorutina).
+	case <-ctx.Done():
+		// Imprime información.
+		log.Printf("[%s] Timeout, forzando cierre...", s.Config.ServiceName)
+		// Detiene el servidor gRPC forzosamente.
+		s.Server.Stop()
+	}
 }
