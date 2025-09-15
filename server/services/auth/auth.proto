@@ -36,7 +36,7 @@ message LoginResponse {
 // ------------------------------
 
 // Define los gRPCs disponibles para autenticación.
-service AuthService {
+service AuthServer {
     // Comprueba si las credenciales son correctas.
     rpc Log(LoginRequest) returns (LoginResponse);
 }

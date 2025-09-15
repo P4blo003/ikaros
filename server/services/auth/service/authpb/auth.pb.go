@@ -158,8 +158,9 @@ const file_auth_proto_rawDesc = "" +
 	"\rLoginResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\bR\x06status\x12!\n" +
 	"\faccess_token\x18\x02 \x01(\tR\vaccessToken\x12#\n" +
-	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken2=\n" +
-	"\vAuthService\x12.\n" +
+	"\rrefresh_token\x18\x03 \x01(\tR\frefreshToken2<\n" +
+	"\n" +
+	"AuthServer\x12.\n" +
 	"\x03Log\x12\x12.auth.LoginRequest\x1a\x13.auth.LoginResponseB\x17Z\x15service/authpb;authpbb\x06proto3"
 
 var (
@@ -180,8 +181,8 @@ var file_auth_proto_goTypes = []any{
 	(*LoginResponse)(nil), // 1: auth.LoginResponse
 }
 var file_auth_proto_depIdxs = []int32{
-	0, // 0: auth.AuthService.Log:input_type -> auth.LoginRequest
-	1, // 1: auth.AuthService.Log:output_type -> auth.LoginResponse
+	0, // 0: auth.AuthServer.Log:input_type -> auth.LoginRequest
+	1, // 1: auth.AuthServer.Log:output_type -> auth.LoginResponse
 	1, // [1:2] is the sub-list for method output_type
 	0, // [0:1] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
