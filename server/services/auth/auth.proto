@@ -1,0 +1,42 @@
+// Versión de Protocol Buffer a utilizar.
+syntax="proto3";
+
+// Paquete gRPC para el servicio de autenticación.
+package auth;
+
+// Indica el paquete Go para los stubs generados.
+option go_package = "service/authpb;authpb";
+
+// ------------------------------
+// PARÁMETROS
+// ------------------------------
+
+// Contiene la información de la petición para hacer login.
+message LoginRequest {
+    // Nombre de usuario.
+    string username = 1;
+    // Contraseña.
+    string password = 2;
+}
+
+// Contiene la información de la respuesta del login.
+message LoginResponse {
+    /* Estado. Ejemplo:
+    * True: Autenticación exitosa.
+    * False: Autenticación fallida. */
+    bool status = 1;
+    // Token de acceso.
+    string access_token = 2;
+    // Token de refresco.
+    string refresh_token = 3;
+}
+
+// ------------------------------
+// FUNCIONES
+// ------------------------------
+
+// Define los gRPCs disponibles para autenticación.
+service AuthService {
+    // Comprueba si las credenciales son correctas.
+    rpc Log(LoginRequest) returns (LoginResponse);
+}
