@@ -23,38 +23,62 @@ user->client: Notifica cerrar sesión
 client-[#blue]>gateway: POST /logout\n{REFRESH_TOKEN}
 
 
-== Invalída refresh token ==
+== Invalidación de tokens ==
 
 gateway-[#purple]>auth: Invalida tokens\n{REFRESH_TOKEN}
-auth->tokenCache: DEL token\n{REFRESH_TOKEN}
-auth->userDB: DELETE token\n{REFRESH_TOKEN}
 
-alt Operación Fallida
-  auth-[#purple]>gateway: Payload
+auth->auth: Comprueba firma\nde ACCESS_TOKEN
+
+alt ACCESS_TOKEN Modificado
+  auth->auth: Comprueba REFRESH_TOKEN
   
-  note right gateway
+  alt REFRESH_TOKEN Inválido
+    auth-[#purple]->gateway: Payload
+    
+    note right gateway
     Payload:
     {
       "status": False
-      "code": 500
+      "code": 401
     }
     end note
     
-  gateway-[#blue]>client: 500 - Server Error
-
-else Operación Exitosa
-  auth-[#purple]>gateway: Payload
-  
-  note right gateway
+    gateway-[#blue]>client: 401 - No autorizado.
+    
+  else REFRESH_TOKEN Válido
+    auth->tokenCache: DEL token\n{REFRESH_TOKEN}
+    auth->userDB: DELETE token\n{REFRESH_TOKEN}
+    
+    auth-[#purple]>gateway: Payload
+    
+    note right gateway
     Payload:
     {
       "status": True
       "code": 200
     }
     end note
-  
-  gateway-[#blue]>client: 200 - OK
-  client->client: Limpiar tokens
+    
+    gateway-[#blue]>client: 200 - OK
+    
+  end
+
+else ACCESS_TOKEN No Modificado
+    auth->tokenCache: DEL token\n{REFRESH_TOKEN}
+    auth->userDB: DELETE token\n{REFRESH_TOKEN}
+    
+    auth-[#purple]>gateway: Payload
+    
+    note right gateway
+    Payload:
+    {
+      "status": True
+      "code": 200
+    }
+    end note
+    
+    gateway-[#blue]>client: 200 - OK
+    
 end
 
 @enduml
