@@ -2,6 +2,11 @@
 
 title "Flujo de login de Usuario"
 
+legend top
+Leyenda:
+- <color:blue>REST</color> = comunicación HTTP
+- <color:purple>gRPC</color> = comunicación gRPC
+end legend
 
 actor User as user
 participant "Client" as client
@@ -76,7 +81,7 @@ else Credenciales Válidas
     }
     end note
   
-    gateway-[#blue]>client: 200 OK\n{ACCESS_TOKEN, REFRESH_TOKEN}
+    gateway-[#blue]>client: 200 - OK\n{ACCESS_TOKEN, REFRESH_TOKEN}
   
   end
 end

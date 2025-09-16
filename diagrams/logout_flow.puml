@@ -2,6 +2,11 @@
 
 title "Flujo de cierre de sesión de Usuario"
 
+legend top
+Leyenda:
+- <color:blue>REST</color> = comunicación HTTP
+- <color:purple>gRPC</color> = comunicación gRPC
+end legend
 
 actor User as user
 participant "Client" as client
@@ -48,7 +53,7 @@ else Operación Exitosa
     }
     end note
   
-  gateway-[#blue]>client: 200 OK
+  gateway-[#blue]>client: 200 - OK
   client->client: Limpiar tokens
 end
 
