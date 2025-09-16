@@ -2,32 +2,83 @@
 
 title "Flujo de login de Usuario"
 
+
 actor User as user
+participant "Client" as client
+participant "API\nGateway" as gateway
+participant "AUTH\nService" as auth
 
-participant Client as client
-participant APIGateway as gateway
-participant AUTH as auth
+database "Token\nCaché" as tokenCache
+database "User\nDB" as userDB
 
-database USERS as usersDB
-database TOKENS as tokensDB
+== Login Inicial ==
 
-user->client: Introduce las credenciales
-client-[#blue]>gateway: HTTPS POST\n(user + password)
-gateway-[#orange]>auth: Solicita autenticación\n(user + password)
-auth->usersDB: Busqueda de Usuario
-usersDB->auth: Devuelve resultado\n(hash + salt)
-auth->auth: Autentica usuario
+user->client: Introduce credenciales\n{username, password}
+client-[#blue]>gateway: POST /login\n{username, password}
 
-alt Autenticación Fallida
-  auth-[#orange]>gateway: Incorrecto
-  gateway-[#blue]>client: 401\nNo autorizado
 
-else Autenticación Exitosa
-  auth->auth: Genera JWT
-  auth->auth: Genera Refresh Token
-  auth->tokensDB: Almacena el token\n(Refresh Token)
-  auth-[#orange]>gateway: Correcto\n(JWT + Refresh Token)
-  gateway-[#blue]>client: 200\nAutorizado\n(JWT + Refresh Token)
+== Validación de credenciales ==
+
+gateway-[#purple]>auth: Valida credenciales\n{username, password}
+auth->userDB: Busqueda de credenciales\n{username}
+userDB->auth: Devuelve credenciales\n{hash, salt}
+auth->auth: Compara contraseñas
+
+alt Credenciales Inválidas
+  auth-[#purple]>gateway: Payload
+  
+  note right gateway
+    Payload:
+    {
+      "status": False
+      "code": 401
+    }
+  end note
+  
+  gateway-[#blue]>client: 401 - No autorizado
+
+else Credenciales Válidas
+  auth->auth: Genera tokens\nACCESS_TOKEN y REFRESH_TOKEN
+  
+  auth->userDB: INSERT/UPDATE token\n{REFRESH_TOKEN}
+  
+  alt Operación Fallida
+    auth-[#purple]>gateway: Payload
+    
+    note right gateway
+    Payload:
+    {
+      "status": False
+      "code": 500
+    }
+    end note
+    
+    gateway-[#blue]>client: 500 - Server Error
+  
+  else Operación Exitosa
+  
+    auth->tokenCache: SET token\n{REFRESH_TOKEN}
+    
+    note right auth
+      Se añade a una base de datos redis. Esto permite que cuando
+      el usuario use REFRESH_TOKEN para generear un
+      nuevo ACCESS_TOKEN, el sistema acceda más rápido al
+      REFRESH_TOKEN almacenado.
+    end note 
+  
+    auth-[#purple]>gateway: Payload
+    
+    note right gateway
+    Payload:
+    {
+      "status": True
+      "code": 200
+    }
+    end note
+  
+    gateway-[#blue]>client: 200 OK\n{ACCESS_TOKEN, REFRESH_TOKEN}
+  
+  end
 end
 
 @enduml
