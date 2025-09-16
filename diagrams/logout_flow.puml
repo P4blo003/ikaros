@@ -25,7 +25,7 @@ client-[#blue]>gateway: POST /logout\n{REFRESH_TOKEN}
 
 == Invalída refresh token ==
 
-gateway-[#purple]>auth: Invalida credenciales\n{REFRESH_TOKEN}
+gateway-[#purple]>auth: Invalida tokens\n{REFRESH_TOKEN}
 auth->tokenCache: DEL token\n{REFRESH_TOKEN}
 auth->userDB: DELETE token\n{REFRESH_TOKEN}
 
