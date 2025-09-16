@@ -1,0 +1,55 @@
+@startuml
+
+title "Flujo de cierre de sesión de Usuario"
+
+
+actor User as user
+participant "Client" as client
+participant "API\nGateway" as gateway
+participant "AUTH\nService" as auth
+
+database "Token\nCaché" as tokenCache
+database "User\nDB" as userDB
+
+
+== Usuario solicita logout ==
+
+user->client: Notifica cerrar sesión
+client-[#blue]>gateway: POST /logout\n{REFRESH_TOKEN}
+
+
+== Invalída refresh token ==
+
+gateway-[#purple]>auth: Invalida credenciales\n{REFRESH_TOKEN}
+auth->tokenCache: DEL token\n{REFRESH_TOKEN}
+auth->userDB: DELETE token\n{REFRESH_TOKEN}
+
+alt Operación Fallida
+  auth-[#purple]>gateway: Payload
+  
+  note right gateway
+    Payload:
+    {
+      "status": False
+      "code": 500
+    }
+    end note
+    
+  gateway-[#blue]>client: 500 - Server Error
+
+else Operación Exitosa
+  auth-[#purple]>gateway: Payload
+  
+  note right gateway
+    Payload:
+    {
+      "status": True
+      "code": 200
+    }
+    end note
+  
+  gateway-[#blue]>client: 200 OK
+  client->client: Limpiar tokens
+end
+
+@enduml
