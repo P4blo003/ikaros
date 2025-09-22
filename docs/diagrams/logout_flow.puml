@@ -1,0 +1,37 @@
+@startuml
+
+title "Flujo de Logout de Usuarios"
+
+legend top
+Comunicaciones:
+  <color:blue>REST</color>: Comunicación HTTP REST  
+  <color:purple>gRPC</color>: Comunicación gRPC  
+end legend
+
+
+actor "Usuario" as user
+participant "Cliente Web/App" as client
+participant "API Gateway\n(APISIX)" as gateway
+participant "Servicio de\nAutenticación" as auth
+database "Base de Datos\nUsuarios" as userDB
+database "Cache Redis\n(Blacklist)" as redis
+
+== Flujo de Logout ==
+
+user -> client: Solicita logout **1.0**
+client -[#blue]-> gateway: HTTP POST /auth/logout **1.1**\n{ACCESS_TOKEN}
+
+gateway -[#purple]-> auth: Redirige la petición **1.2**\n{ACCESS_TOKEN}
+
+auth --> redis: Agrega token a blacklist **2.1**
+alt Token de Refresh existe
+    auth -> userDB: Elimina refresh token **2.2**\n(revocación permanente)
+    userDB --> auth: Confirmación
+    
+end
+
+auth -[#purple]-> gateway: Logout Ok **3.1**
+gateway -[#blue]-> client: HTTP 200 - Ok **3.2**
+client -> client: Elimina tokens almacenados **3.3**
+
+@enduml

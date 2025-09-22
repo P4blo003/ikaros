@@ -1,0 +1,32 @@
+@startuml
+
+title "Flujo de Creación de chat"
+
+legend top
+Comunicaciones:
+  <color:blue>REST</color>: Comunicación HTTP REST  
+  <color:purple>gRPC</color>: Comunicación gRPC  
+end legend
+
+
+actor "Usuario" as user
+participant "Cliente Web/App" as client
+participant "API Gateway\n(APISIX)" as gateway
+participant "Servicio de\nAutenticación" as auth
+participant "Servicio de \nChat" as chat
+database "Base de Datos\nChats" as chatDB
+
+== Flujo de Creación de Chat ==
+
+user -> client: Solicita crear chat **1.0**
+client -[#blue]-> gateway: HTTP GET /chat/new **1.1**\n{ACCESS_TOKEN}
+
+gateway -[#purple]-> chat: Redirige la petición **1.2**\n{USER_ID}
+chat -> chat: Crea directorios y ficheros **2.1**
+chat --> chatDB: Crea un nuevo chat **2.2**
+chatDB --> chat: Confirmación
+
+chat -[#purple]-> gateway: Nuevo Chat Ok **3.1**\n{CHAT_ID}
+gateway -[#blue]-> client: HTTP 200 - Ok **3.2**\n{CHAT_ID}
+
+@enduml

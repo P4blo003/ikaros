@@ -1,0 +1,46 @@
+@startuml
+
+title "Flujo de Consultass de Usuarios"
+
+legend top
+Comunicaciones:
+  <color:blue>REST</color>: Comunicación HTTP REST  
+  <color:purple>gRPC</color>: Comunicación gRPC  
+end legend
+
+
+actor "Usuario" as user
+participant "Cliente Web/App" as client
+participant "API Gateway\n(APISIX)" as gateway
+participant "Servicio de \nChat" as chat
+participant "Orquestador de \nConversación" as conv
+participant "Servicio de \nRAG" as rag
+participant "Servicio de \nOllama" as ollama
+database "Base de Datos\nChats" as chatDB
+
+== Flujo de Creación de Chat ==
+
+user -> client: Solicita crear chat **1.0**
+client -[#blue]-> gateway: HTTP POST /conversation **1.1**\n{ACCESS_TOKEN, CHAT_ID}
+
+gateway -[#purple]-> conv: Obten respuesta **2.1**\n{USER_ID, CHAT_ID}
+conv -[#purple]-> chat: Solicita historial **2.2**\n{USER_ID, CHAT_ID}
+chat -> chat: Obtiene historial **2.3**
+chat -[#purple]-> conv: Devuelve resultado\n{HISTORIAL}
+
+conv -[#purple]-> rag: Solicita contexto **3.1**\n{QUERY, HISTORIAL}
+rag -> rag: Obtiene contexto **3.2**
+rag -[#purple]-> conv: Devuelve contexto\n{CONTEXTO}
+
+conv -> conv: Genera prompt **4.1**
+
+conv -[#blue]-> ollama: HTTP POST /chat **5.1**\n{PROMPT}
+ollama -[#blue]-> conv: HTTP 200 - Ok **5.2**\n{RESPONSE}
+
+conv -[#purple]-> gateway: Respuesta Ok **6.1**\n{RESPONSE}
+conv -[#purple]-> chat: (async) Add response **6.2.2**\n{USER_ID, CHAT_ID, QUERY, RESPONSE}
+chat --> chatDB: Almacena nueva conversacion **6.2.2**
+gateway -[#blue]-> client: HTTP 200 - Ok **6.3**\n{RESPONSE}
+
+
+@enduml

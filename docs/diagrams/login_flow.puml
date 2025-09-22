@@ -1,0 +1,53 @@
+@startuml
+
+title "Flujo de Login de Usuarios"
+
+legend top
+Comunicaciones:
+  <color:blue>REST</color>: Comunicación HTTP REST  
+  <color:purple>gRPC</color>: Comunicación gRPC  
+end legend
+
+
+actor "Usuario" as user
+participant "Cliente Web/App" as client
+participant "API Gateway\n(APISIX)" as gateway
+participant "Servicio de\nAutenticación" as auth
+database "Base de Datos\nUsuarios" as userDB
+
+== Flujo de Login ==
+
+user -> client: Introduce credenciales **1.0**\n{USERNAME, PASSWORD}
+client -[#blue]-> gateway: HTTP POST /auth/login **1.1**\n{USERNAME, PASSWORD}
+
+gateway -[#purple]-> auth: Redirige la petición **1.2**\n{USERNAME, PASSWORD}
+
+auth --> userDB: Busca las credenciales **1.3**
+userDB --> auth: OK\n{HASH, SALT}
+
+auth -> auth: Genera ACCESS_TOKEN **1.4.1a**
+auth -> auth: Genera REFRESH_TOKEN **1.4.2a**
+auth --> userDB: Almacena REFRESH_TOKEN **1.5a**
+
+auth -[#purple]-> gateway: Login Ok **1.6a**\n{ACCESS_TOKEN, REFRESH_TOKEN}
+gateway -[#blue]-> client: HTTP 200 - Ok **1.7a**\n{ACCESS_TOKEN, REFRESH_TOKEN}
+
+client -> client: Almacena tokens **1.8a**
+
+
+== Flujos Alternativos ==
+
+alt Usuario Inexistente
+  userDB --> auth: FAIL (No existe usuario)
+  auth -[#purple]-> gateway: Login Failure **1.4b**
+  gateway -[#blue]-> client: 401 - No autorizado **1.5b**
+  
+end
+
+alt Internal Error
+  auth -[#purple]-> gateway: Login Failure **1.4c**
+  gateway -[#blue]-> client: 500 - Server error **1.5c**
+  
+end
+
+@enduml
