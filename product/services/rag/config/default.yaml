@@ -10,9 +10,15 @@
 # CONFGURACIÓN
 # ------------------------------
 
+# Configuración del servicio.
 service:
   # Configuración de gRPC.
   grpc:
+    # Puede ser:
+    #   - localhost:    Dirección de localhost, solo el propio equipo.
+    #   - 127.0.0.1:    Dirección de localhost, solo el propio equipo.
+    #   - 0.0.0.0:      Todas las interfaces de red.
+    #   - 192.168.0.1:  Interfaz de red específica.
     host: 'localhost'     # Host del servicio.
     port: 50051           # Puerto del servicio.
     max_workers: 10       # Número máximo de trabajadores.
