@@ -39,7 +39,7 @@ class LoggerConfig(BaseModel):
     """
     # -- Atributos -- #
     level:str =                 Field(default='INFO')
-    format:str =                Field(default='%(asctime)s - %(name)s - %(levelname)-8s - %(message)s')
+    format:str =                Field(default='%(asctime)s - %(name)s - %(levelname)s >> %(message)s')
     datefmt:str =               Field(default='%Y-%m-%d %H:%M:%S')
     file_path:Optional[str] =   Field(default=None)
     max_bytes:int =             Field(default=0)
