@@ -14,6 +14,7 @@ import logging
 from typing import Optional
 
 # Internas:
+from internal.service import ServiceManager
 from common.logger import create_logger
 
 
@@ -25,20 +26,22 @@ from common.logger import create_logger
 if __name__ == "__main__":
 
     # Representa el estado del servicio.
-    STATUS_CODE:int                 = 0
+    STATUS_CODE:int                         = 0
     # Representa el logger del servicio.
-    LOGGER:Optional[logging.Logger] = None
+    LOGGER:Optional[logging.Logger]         = None
+    # Representa el gestor del servicio.
+    SERVICE_MNG:Optional[ServiceManager]    = None
 
     # Try-except para manejo de errores.
     try:
         # Crea el logger.
-        LOGGER = create_logger(name='rag.service')
+        LOGGER = create_logger(name='rag')
 
-        # Imprime información de ejecución.
-        LOGGER.info("Service started.")
+        # Inicializa el gestor del servicio.
+        SERVICE_MNG = ServiceManager()
 
-        # Imprime información de finalización.
-        LOGGER.info("Service finished.")
+        # Inicia el servicio.
+        SERVICE_MNG.serve()
 
     # Si ocurre algún error.
     except Exception as e:
@@ -54,4 +57,9 @@ if __name__ == "__main__":
 
     # Se ejecuta siempre al final.
     finally:
+        # Comprueba si el gestor del servicio no es nulo.
+        if SERVICE_MNG:
+            # Detiene y libera recursos.
+            SERVICE_MNG.stop()
+        # Finaliza el programa con el código de salida.
         exit(code=STATUS_CODE)
