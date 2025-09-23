@@ -1,0 +1,19 @@
+# ------------------------------------------------------------
+# Autor: Pablo González García
+# Fecha: 23 Septiembre 2025
+# Descripción: Contiene la configuración del servicio
+#     RAG.
+# ------------------------------------------------------------
+
+
+# ------------------------------
+# CONFGURACIÓN
+# ------------------------------
+
+service:
+  # Configuración de gRPC.
+  grpc:
+    host: 'localhost'     # Host del servicio.
+    port: 50051           # Puerto del servicio.
+    max_workers: 10       # Número máximo de trabajadores.
+    logs: 'rag.grpc.log'  # Fichero de logs del servicio.
