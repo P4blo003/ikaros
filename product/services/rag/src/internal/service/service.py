@@ -16,6 +16,7 @@ from concurrent import futures
 from logging import Logger
 
 # Internas:
+from .model import ServiceConfig
 from common.logger import create_logger
 from proto.rag import (
     service_pb2,
@@ -49,8 +50,9 @@ class RagServiceServicer(service_pb2_grpc.RagServiceServicer):
         """
         Implementación del método para obtener el contexto.
         """
+        # Imprime información.
+        self.__logger.info("Petición recibida.")
         # TODO: Lógica principal.
-        pass
 
 
 class ServiceManager:
@@ -67,7 +69,7 @@ class ServiceManager:
         # Inicializa el logger.
         self.__logger:Logger = create_logger(name="service-manager")
 
-        # Inicializa el servicio..
+        # Inicializa el servicio.
         self.__servicer:service_pb2_grpc.RagServiceServicer = RagServiceServicer()
         # Inicializa el servidor.
         self.__server:grpc.Server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
