@@ -38,9 +38,9 @@ class LoggerConfig(BaseModel):
             al hacer rotación de logs.
     """
     # -- Atributos -- #
-    level:str =                     Field(default='INFO')
-    format:str =                    Field(default='%(asctime)s - %(name)s - %(levelname)-8s - %(message)s')
-    datefmt:str =                   Field(default='%Y-%m-%d %H:%M:%S')
-    file_path:Optional[str] =       Field(default=None)
-    max_bytes:Optional[str] =       Field(default=None)
-    backup_count:Optional[str] =    Field(default=None)
+    level:str =                 Field(default='INFO')
+    format:str =                Field(default='%(asctime)s - %(name)s - %(levelname)-8s - %(message)s')
+    datefmt:str =               Field(default='%Y-%m-%d %H:%M:%S')
+    file_path:Optional[str] =   Field(default=None)
+    max_bytes:int =             Field(default=0)
+    backup_count:int =          Field(default=0)
