@@ -67,7 +67,8 @@ if __name__ == "__main__":
     
     # Si se detecta Ctrl+C
     except KeyboardInterrupt:
-        pass
+        # Imprime la información.
+        print("Ctrl+C detectado. Finalizando programa ...")
 
     # Si se detecta cualquier error.
     except Exception as e:
