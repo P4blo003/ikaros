@@ -37,8 +37,7 @@ def get_exec_info() -> Optional[ExecInfo]:
         # Retorna la información.
         return ExecInfo(
             line_number=exc_traceback.tb_lineno,
-            file_name=exc_traceback.tb_frame.f_code.co_filename,
-            function_name=exc_traceback.tb_frame.f_code.co_name
+            file_name=exc_traceback.tb_frame.f_code.co_filename
         )
     # En caso de que no se haya obtenido.
     return None
