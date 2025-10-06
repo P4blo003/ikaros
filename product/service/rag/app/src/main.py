@@ -1,10 +1,9 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Creación: 01/10/2025
-# Última Edición: 01/10/2025
-#
-# Descripción: Implementa el flujo principal del servicio.
+# Creación: 06 Octubre 2025
+# Última Edición: 06 Octubre 2025
 # ------------------------------------------------------------------------------------------
+
 
 # ------------------------------
 # MÓDULOS
@@ -12,72 +11,81 @@
 
 # Estándar:
 import sys
-from pathlib import Path
-from typing import Optional
+from typing import (Optional)
 
 # Internas:
-from common.log import LoggerFactory
-from common.os import ExecInfo
-from common.os import get_exec_info
+from core.grpc import (GrpcServer)
 
-# Externas:
-
+from common.os.console import (Console)
+from common.log import (LoggerFactory)
+from common.log import (init_factory, get_factory)
 
 # ------------------------------
 # FUNCIONES
 # ------------------------------
 
-def print_error(exception:Exception, info:Optional[ExecInfo]) -> None:
+def init_singletons() -> None:
     """
-    Imprime el error en un formato dado.
-
-    Args:
-        exception (Exception): Excepción a imprimir.
-        info (ExecInfo): Información de la ejecución.
+    Inicializa los singletons del programa.
     """
-    # Inicializa la cadena a mostrar.
-    error:str = f"\n{str(exception)}"
-    error += f"TYPE: {type(exception).__name__}"
-
-    # Comprueba si se ha dado información de ejecución.
-    if info:
-        # Añade la información.
-        error += f" at {info.file_name} in line {info.line_number}"
-    
-    # Añade el punto final.
-    error += ".\n"
-
-    # Imprime el error.
-    print(error)
+    # Inicializa la factoría de loggers.
+    init_factory()
 
 
 # ------------------------------
 # LÓGICA
 # ------------------------------
 
-# Comprueba si se está ejecutando como script.
+# -- Lógica principal -- #
 if __name__ == "__main__":
 
     # -- Variables -- #
-    EXEC_STATUS:int = 0
+    status_code:int = 0
+    console:Optional[Console] = None
+    grpc_server:Optional[GrpcServer] = None
+
+
+    # -- Lógica principal -- #
 
     # Try-Except para manejo de errores.
     try:
-        pass
-    
-    # Si se detecta Ctrl+C
+        # Objeto para imprimir por consola.
+        console = Console()
+
+        # Inicializa singletons.
+        init_singletons()
+
+        # Inicializa el servidor gRPC.
+        grpc_server = GrpcServer(service_name='RagGrpcServer')
+
+        # Inicia el servicio.
+        grpc_server.start()
+
+    # Si se detecta Ctrl+C.
     except KeyboardInterrupt:
-        # Imprime la información.
-        print("Ctrl+C detectado. Finalizando programa ...")
-
-    # Si se detecta cualquier error.
+        pass
+        
+    # Si se detecta algún error.
     except Exception as e:
-        # Establece el estado de ejecución.
-        EXEC_STATUS = 1
-        # Imprime el error.
-        print_error(exception=e, info = get_exec_info())
+        # Comprueba si el objeto ha sido creado.
+        if console:
+            # Imprime la información.
+            console.error(f"{e}")
 
-    # Se ejecuta finalmente.
+        # Establece el estado.
+        status_code = 1
+
+    # Finalmente.
     finally:
-        # Finaliza el programa con el código de estado.
-        sys.exit(EXEC_STATUS)
+        # Comprueba si el servidor gRPC ha sido inicializado.
+        if grpc_server:
+            # Detiene el servicio en caso de que este corriendo.
+            grpc_server.stop()
+
+        # Comprueba si el objeto ha sido inicializado.
+        if console:
+            # Imprime la información.
+            console.info("Service shutdown complete.")
+
+        # Finaliza el programa.
+        sys.exit(status_code)

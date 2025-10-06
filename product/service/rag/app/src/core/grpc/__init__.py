@@ -1,25 +1,24 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Creación: 01/10/2025
-# Última Edición: 01/10/2025
-#
-# Descripción: Implementa las importaciones del módulo.
+# Creación: 06 Octubre 2025
+# Última Edición: 06 Octubre 2025
 # ------------------------------------------------------------------------------------------
+
 
 # ------------------------------
 # MÓDULOS
 # ------------------------------
 
+# Estándar:
+from typing import List
+
 # Internas:
-from .main import get_exec_info
-from .schema import ExecInfo
+from .main import (GrpcServer)
 
 
 # ------------------------------
-# CONFIGURACIÓN
+# VARIABLES
 # ------------------------------
 
-# Configura los módulos de clases.
-__all__ = ['ExecInfo']
-# Configura los módulos de funciones.
-__all__ += ['get_exec_info']
+# Imports de clases.
+__all__:List = ['GrpcServer']

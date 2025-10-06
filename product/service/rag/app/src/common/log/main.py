@@ -1,29 +1,23 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Creación: 01/10/2025
-# Última Edición: 01/10/2025
-#
-# Descripción: Implementa las funcionalidades principales relacionadas
-# con los logs del programa.
+# Creación: 06 Octubre 2025
+# Última Edición: 06 Octubre 2025
 # ------------------------------------------------------------------------------------------
+
 
 # ------------------------------
 # MÓDULOS
 # ------------------------------
 
 # Estándar:
-import logging
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
-from typing import (
-    Optional,
-    Dict
-)
+from typing import (Optional)
+from logging import (Logger, Formatter, StreamHandler)
+from logging import (getLogger)
+from logging.handlers import (RotatingFileHandler)
+from pathlib import (Path)
 
 # Internas:
-from .schema import LoggerSchema
-
-# Externas:
+from .config import (LoggerConfig)
 
 
 # ------------------------------
@@ -32,100 +26,65 @@ from .schema import LoggerSchema
 
 class LoggerFactory:
     """
-    Factoría para la construcción de loggers.
+    Factoría de loggers. Permite la creación de loggers de diferentes tipos y salidas
     """
     # -- Default -- #
-    
-    def __init__(self, sch:LoggerSchema = LoggerSchema()) -> None:
+
+    def __init__(self, logger_cfg:LoggerConfig) -> None:
         """
-        Inicializa la factoria con la configuración dada.
+        Inicializa las propiedades.
 
         Args:
-            sch (LoggerSchema): Esquema con la configuración del logger.
+            logger_cfg (LoggerConfig): Configuración del logger.
         """
         # Inicializa las propiedades.
-        self.__schema:LoggerSchema = sch
-        self.__created_loggers:Dict[str, logging.Logger] = {}
-    
+        self.__logger_cfg:LoggerConfig = logger_cfg
+
 
     # -- Métodos -- #
 
-    def get_logger(self, name:str, console_output:bool=True, file:Optional[Path]=None) -> logging.Logger:
+    def get_logger(self, name:str, console_output:bool = True, file_output:Optional[Path] = None) -> Logger:
         """
-        Obtiene un logger con el nombre dado. Permite indicar el tipo de salida para el logger, pudiendo
-        ser tanto por consola como en un fichero.
+        Genera un logger con la configuración dada.
 
         Args:
             name (str): Nombre del logger.
-            console_output (bool): True si se desea salida por consola.
-            file (Optiona[Path]): Si se aporta este dato, se creará un fichero de salida.
-        Raises:
-            ValeueError: En caso de que alguno de los argumentos sea inválido.
-        Returns:
-            logging.Logger: Logger configurado.
+            console_output (bool): True si se desea salida por consola (True por defecto).
+            file_output (Optional[Path]): Ruta a fichero de salida (None por defecto).
         """
         # Comprueba si los parámetros son correctos.
-        if not console_output and not file:
-            # Lanza un aexcepción.
-            raise ValueError(
-                "Configuración del logger inválida: El logger debe tener al menos una salida especificada.\n"
-                f"Valores disponibles:\n"
-                f"\t- console_output: True si se quiere salida por consola.\n"
-                f"\t- file: Path si se quiere salida por fichero.\n"
-                f"Valores aportados:\n"
-                f"\t- console_output={console_output} | file={file}\n"
-            )
-        
-        # Comprueba que el nombre sea válido.
-        if name.strip() == '':
+        if not console_output and not file_output:
             # Lanza una excepción.
             raise ValueError(
-                "Configuración del logger inválida: El nombre del logger no puede estar vacío.\n"
-                f"Valor aportado:\n"
-                f"\t- name='{name}'\n"
+                "Invalid logger argument: Logger should have at least one output.\n"
+                "Available values:\n" \
+                "\t- console_output: True if you want console output.\n" \
+                "\t- file_output: Path if you want file output.\n" \
+                f"Given: console_output={console_output} | file_output={file_output}\n"
             )
+        
+        # Comprueba si el nombre es correcto.
+        if name.strip() == "":
+            # Lanza una excepción.
+            raise ValueError(
+                "Invalid logger argument: Logger name invalid.\n"
+                f"Given: name={name}\n"
+            )
+        
+        # Genera un logger con el nombre.
+        logger:Logger = getLogger(name=name)
+        logger.setLevel(level=self.__logger_cfg.level)
 
-        # Inicializa el logger inicial.
-        logger:logging.Logger = logging.getLogger(name=name)
-        logger.setLevel(level=self.__schema.level)
+        # Genera el formateador.
+        formatter:Formatter = Formatter(fmt=self.__logger_cfg.fmt, datefmt=self.__logger_cfg.date_fmt)
 
-        # Evita que haya handlers duplciados.
-        if logger.handlers:
-            # Limpia los handlers.
-            logger.handlers.clear()
-
-        # Crea el formateador.
-        formatter:logging.Formatter = logging.Formatter(fmt=self.__schema.fmt, datefmt=self.__schema.date_fmt)
-
-        # Comprueba si se desea un handler de consola.
+        # Comprueba si se quiere salida por consola.
         if console_output:
-            # Crea y configura el handler.
-            console_handler:logging.StreamHandler = logging.StreamHandler()
+            # Crea  configura el handler de consola.
+            console_handler:StreamHandler = StreamHandler()
             console_handler.setFormatter(fmt=formatter)
             # Añade el handler.
-            logger.addHandler(console_handler)
-        
-        # Comprueba si se desea un handler de fichero.
-        if file:
-            # Comprueba si la ruta padre exsite.
-            if not file.parent.exists():
-                # Lanza una excepción.
-                raise FileNotFoundError(
-                "Configuración del logger inválida: No se encontró ninguna ruta hasta el Path especifciado.\n"
-                f"Valores aportados:\n"
-                f"\t- file={file}\n"
-            )
+            logger.addHandler(hdlr=console_handler)
 
-            # Crea y configura el handler.
-            file_handler:RotatingFileHandler = RotatingFileHandler(filename=file,
-                                                                   maxBytes=self.__schema.max_bytes,
-                                                                   backupCount=self.__schema.backup_count)
-            file_handler.setFormatter(fmt=formatter)
-            # Añade el handler.
-            logger.addHandler(file_handler)
-
-        # Añade el handler creado al diccionario.
-        self.__created_loggers[name] = logger
-
-        # Retorna el logger configurado.
+        # Retorna el logger creado.
         return logger
