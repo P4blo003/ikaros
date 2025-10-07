@@ -1,7 +1,6 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Creación: 06 Octubre 2025
-# Última Edición: 06 Octubre 2025
+# Descripción: Contiene las importaciones del módulo.
 # ------------------------------------------------------------------------------------------
 
 
@@ -9,16 +8,13 @@
 # MÓDULOS
 # ------------------------------
 
-# Estándar:
-from typing import List
-
-# Internas:
+# Internos:
 from .main import (GrpcServer)
 
 
 # ------------------------------
-# VARIABLES
+# CONFIGURACIÓN
 # ------------------------------
 
-# Imports de clases.
-__all__:List = ['GrpcServer']
+# Configura las clases.
+__all__ = ['GrpcServer']
