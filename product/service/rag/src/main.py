@@ -86,10 +86,23 @@ def application_lifecycle():
         signal.signal(signalnum=signal.SIGTERM, handler=signal_handler)
 
         # Inicializa el logger manager.
-        LoggerManager.setup_config()
+        status, error = LoggerManager.setup_config()
+
         # Inicializa el logger.
         logger = LoggerManager.get_logger('app')
 
+        # Imprime la información.
+        if status != 0:
+            # Genera el mensaje.
+            msg:str = "Couldn't load configuration from file. Using default configuration"
+            # Comprueba si hay alguna excepción.
+            if error:
+                # Añade la excepción al mensaje.
+                msg += f"because: {error}"
+
+            # Imprime el aviso.
+            logger.warning(msg)
+        
         # Imprime la información.
         logger.info("Starting ...")
 
