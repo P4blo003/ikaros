@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Descripción: Contiene el flujo principal de la aplicación.
+# Descripción: Contiene las funcionalidades principales de la
+# aplicación.
 # ------------------------------------------------------------------------------------------
 
 
@@ -9,57 +10,179 @@
 # ------------------------------
 
 # Estándar:
+import sys
+import signal
+import time
 from typing import (Optional)
+from contextlib import (contextmanager)
 from logging import (Logger)
 
 # Internos:
 from common.log import (LoggerManager)
-from core.grpc import (GrpcServer)
+
+
+# ------------------------------
+# UTILIDADES
+# ------------------------------
+
+@contextmanager
+def application_lifecycle():
+    """
+    Context manager para gestionar el ciclo de vida de la aplicación.
+    Maneja la inicialización, ejecución y shutdown graceful.
+    """
+    # -- Variables -- #
+
+    # Logger principal.
+    logger:Optional[Logger] = None
+    # Servidor gRPC.
+
+    # Solicitud de finalización.
+    shutdown_request:bool = False
+
+
+    # -- Funciones -- #
+
+    def signal_handler(signum:int, frame) -> None:
+        """
+        Manejador para señales de terminación.
+
+        Args:
+            signum (int): Identificador de la señal.
+            frame:
+        """
+        # -- Variables -- #
+
+        # Para saber si ya se está procesando una señal de terminación.
+        nonlocal shutdown_request
+
+        # Comprueba si ya se está manejando.
+        if shutdown_request:
+            # Retorna.
+            return
+        
+        # Establece que se esta procesando.
+        shutdown_request = True
+        # Obtiene el nombre de la señal.
+        signal_name:str = 'SIGINT' if signum == signal.SIGINT else 'SIGTERM'
+
+        # Comprueba si el logger esta inicializado.
+        if logger:
+            # Imprime la información.
+            logger.info(f"Signal {signal_name} received. Starting gracefull shutdown ...")
+
+        # Limpieza del carácter C^.
+        sys.stdout.write('\r\033[K')
+        sys.stdout.flush()
+    
+
+    # -- Lógica -- #
+
+    # Try-Except para manejo de errores.
+    try:
+        # Configura los manejadores de señales.
+        signal.signal(signalnum=signal.SIGINT, handler=signal_handler)
+        # Configura los manejadores de señales.
+        signal.signal(signalnum=signal.SIGTERM, handler=signal_handler)
+
+        # Inicializa el logger manager.
+        LoggerManager.setup_config()
+        # Inicializa el logger.
+        logger = LoggerManager.get_logger('app')
+
+        # Imprime la información.
+        logger.info("Starting ...")
+
+        # Retorna los valores generados.
+        yield logger
+
+    # Si ocurre algún error.
+    except Exception as e:
+        # Comprueba si el logger esta inicializado.
+        if logger:
+            # Imprime información.
+            logger.error(f"Error occurred during initialization: {e}")
+        
+        # Relanza la excepción.
+        raise
+
+    # Finalmente.
+    finally:
+        # Comprueba si el logger esta inicializado.
+        if logger:
+            # Imprime información.
+            logger.info(f"Starting gracefull shutdown ...")
+        
+        # Obtiene el tiempo inicial.
+        shutdown_start:float = time.time()
+
+        # Try-Except para manejo de errores.
+        try:
+            # Coprueba si el servidor está inicializado.
+            pass
+
+        # Si ocurre algún error.
+        except Exception as e:
+            # Comprueba si el logger esta inicializado.
+            if logger:
+                # Imprime información.
+                logger.error(f"Error occurred during shutdown: {e}")
+            
+        # Finalmente.
+        finally:
+            # Obtiene la duración.
+            shutdown_time:float = time.time() - shutdown_start
+
+            # Comprueba si el logger esta inicializado.
+            if logger:
+                # Imprime información.
+                logger.info(f"Shutdown complete in %.2fs", shutdown_time)
+
+
+# ------------------------------
+# FUNCIONES
+# ------------------------------
+
+def main() -> int:
+    """
+    Lógica principal de la aplicación. Retorna 0 en caso de ejecución exitosa y mayor que 0
+    en caso de que ocurra algún error.
+    """
+    # Inicializa el contexto de la aplicación.
+    with application_lifecycle() as (logger):
+        # Try-Except para manejo de errores.
+        try:
+            pass
+            # Retorna ejecución exitos.
+            return 0
+
+        # Si ocurre algún error.
+        except Exception as e:
+            # Imprime el error.
+            logger.critical(f"Critical error during the execution: {e}")
+            # Retorna ejecución fallida.
+            return 1
+        
 
 
 # ------------------------------
 # LÓGICA
 # ------------------------------
 
-# Comprueba si se está llamando como script.
+# Comprueba que se esta ejecutando como main.
 if __name__ == "__main__":
-
-    # -- Variables -- #
-
-    # Logger principal.
-    logger:Optional[Logger] = None
-    # Servidor gRPC.
-    grpc_server:Optional[GrpcServer] = None
-
-
-    # -- Lógica principal -- #
 
     # Try-Except para manejo de errores.
     try:
-        # Inicializa la configuración del logger.
-        LoggerManager.setup_logging()
-        # Inicializa el logger.
-        logger = LoggerManager.get_logger(name='main')
+        # Obtiene el código de ejecución.
+        exit_code:int = main()
+        # Finaliza el programa.
+        sys.exit(exit_code)
 
-        # Inicializa el servidor gRPC.
-        grpc_server = GrpcServer()
-        # Inicia el servidor.
-        grpc_server.start()
-
-    # Si se detecta Ctrl+C.
-    except KeyboardInterrupt:
-        pass
-
-    # Si se detecta cualquier error.
+    # Si ocurre algún error.
     except Exception as e:
-        # Comprueba si se ha creado el logger.
-        if logger:
-            # Imprime el error.
-            logger.error(f"{type(e).__name__}: {e}")
+        # Imprime el error.
+        print(f"Fatal error during initialization: {e}")
 
-    # Se ejecuta finalmente.
-    finally:
-        # Comprueba si se ha creado el servidor.
-        if grpc_server:
-            # Detiene el servidor.
-            grpc_server.stop()
+        # Finaliza el programa.
+        sys.exit(2)

@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------------------------
 # Autor: Pablo González García
-# Descripción: Contiene las importaciones del módulo.
+# Descripción: Contiene las funcionalidades que se pueden exportar
+# desde el módulo.
 # ------------------------------------------------------------------------------------------
 
 
@@ -8,13 +9,20 @@
 # MÓDULOS
 # ------------------------------
 
-# Internos:
-from .main import (LoggerManager)
+# Internas:
+from .main import LoggerManager
 
 
 # ------------------------------
-# CONFIGURACIÓN
+# VARIABLES
 # ------------------------------
 
-# Configura las clases.
-__all__ = ['LoggerManager']
+# Contiene las funcionalidades a exportar.
+__all__ = []
+
+# ------------------------------
+# LÓGICA
+# ------------------------------
+
+# Establece las clases.
+__all__ += ['LoggerManager']

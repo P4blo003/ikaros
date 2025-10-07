@@ -11,7 +11,7 @@
 
 # Estándar:
 import logging.config
-from typing import (Dict, Optional)
+from typing import (Optional, Tuple, Dict)
 from pathlib import (Path)
 
 # Externas:
@@ -24,41 +24,51 @@ import yaml
 
 class LoggerManager:
     """
-    Gestor de los loggers de la aplicación.
+    Gestor de los loggers de la aplicación. Permite cargar configuraciones de ficheros
+    'yaml'.
 
     Attributes:
-        - configured (bool): True si esta configurado.
+        configured (bool): Si esta configurado o no.
     """
     # -- Atributos -- #
 
-    # Si esta configurado o no.
+    # Indica si esta configurado o no.
     configured:bool = False
 
 
     # -- Métodos -- #
 
     @classmethod
-    def setup_logging(cls, config_path:str='config/log.yml'):
+    def setup_config(cls, config_path:str='config/log.yml') -> Tuple[int, Optional[Exception]]:
         """
-        Establece la configuración a partir de un fichero dado.
+        Establece la configuración de los loggers. Intenta cargar la configuración desde el fichero
+        o carga una configuración por defecto en caso de que no se pueda.
 
         Args:
-            config_path (str): Ruta realtiva o absoluta al fichero de configuración.
+            config_path (str): Ruta (Relativa/Absoluta) al fichero de configuración.
+        Returns:
+            Tuple[int,Optional[Exception]]: Tupla con el estado de la función y el error (en caso de que haya habido alguno).
+
+                - int: Indica si se cargo correctamente el fichero o no.
+                - Optional[Exception]: Error en caso de que hubiera alguno.
         """
-        # Comprueba si ya esta configurado.
-        if cls.configured:
-            # Finaliza.
-            return
+        # -- Variables -- #
 
         # Genera el path.
-        file_path:Path = Path(config_path)
+        p:Path = Path(config_path)
+        # Estado de la función.
+        status:int = 0
+        # Error de la función.
+        error:Optional[Exception] = None
+
+
+        # -- Lógica -- #
 
         # Try-Except para manejo de errores.
         try:
-            
-            # Carga la configuración desde el path.
-            with file_path.open(mode='r', encoding='utf-8') as f:
-                # Carga la configuración.
+            # Abre el fichero de configuración.
+            with p.open(mode='r', encoding='utf-8') as f:
+                # Carga los datos.
                 config:Dict = yaml.safe_load(f)
             
             # Crea el directorio de logs si no existe.
@@ -66,28 +76,37 @@ class LoggerManager:
 
             # Aplica la configuración.
             logging.config.dictConfig(config=config)
-            # Establece que se ha cargado la configuración.
+
+            # Indica que está configurado.
             cls.configured = True
 
         # Si ocurre algún error.
         except Exception as e:
-            # Establece una configuración por defecto.
-            logging.basicConfig(level=logging.INFO)
-            logging.error(f"Failed to load YAML configuration: {e}")
-
+            # Establece el estado.
+            status = 1
+            # Establece el error.
+            error = e
+        
+        # Finalmente.
+        finally:
+            # Retorna la tupla.
+            return status, error
+    
     @classmethod
-    def get_logger(cls, name:Optional[str]=None, logger_type:str='default'):
+    def get_logger(cls, name:Optional[str]=None, logger_type:str='default') -> logging.Logger:
         """
-        Obtiene un logger configurado.
+        Genera un logger configurado.
 
         Args:
             name (str): Nombre del módulo.
             logger_type (str): Tipo de ogger preconfigurado del YAML.
         """
-        # Comprueba si no se ha cargado la configuracion.
+        # -- Lógica -- #
+
+        # Comprueba si no esta configurado.
         if not cls.configured:
-            # Carga la configuración.
-            cls.setup_logging()
+            # Configura el logger.
+            cls.setup_config()
         
         # Comprueba el tipo dado.
         if logger_type.lower() != "default":
