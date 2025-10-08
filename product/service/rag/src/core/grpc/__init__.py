@@ -10,7 +10,7 @@
 # ------------------------------
 
 # Internas:
-from .main import (LoggerManager)
+from .main import GrpcServer
 
 
 # ------------------------------
@@ -25,4 +25,4 @@ __all__ = []
 # ------------------------------
 
 # Establece las clases.
-__all__ += ['LoggerManager']
+__all__ += ['GrpcServer']

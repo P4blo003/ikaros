@@ -11,7 +11,7 @@
 
 # Estándar:
 import logging.config
-from typing import (Optional, Any, Tuple, Dict)
+from typing import (Optional, Any, Dict)
 from pathlib import (Path)
 
 # Externas:
@@ -183,7 +183,7 @@ class LoggerManager:
     # -- Métodos -- #
 
     @classmethod
-    def setup_config(cls, config_path:str='config/log.yml') -> Tuple[int, Optional[Exception]]:
+    def setup_config(cls, config_path:str='config/log.yml') -> Optional[Exception]:
         """
         Establece la configuración de los loggers. Intenta cargar la configuración desde el fichero
         o carga una configuración por defecto en caso de que no se pueda.
@@ -191,10 +191,7 @@ class LoggerManager:
         Args:
             config_path (str): Ruta (Relativa/Absoluta) al fichero de configuración.
         Returns:
-            Tuple[int,Optional[Exception]]: Tupla con el estado de la función y el error (en caso de que haya habido alguno).
-
-                - int: Indica si se cargo correctamente el fichero o no.
-                - Optional[Exception]: Error en caso de que hubiera alguno.
+            Optional[Exception]: El error en caso de que lo hubiera.
         """
         # -- Variables -- #
 
@@ -203,8 +200,6 @@ class LoggerManager:
 
         # Genera el path.
         p:Path = Path(config_path)
-        # Estado de la función.
-        status:int = 0
         # Error de la función.
         error:Optional[Exception] = None
         # Configuración.
@@ -225,8 +220,6 @@ class LoggerManager:
 
         # Si ocurre algún error.
         except Exception as e:
-            # Establece el estado.
-            status = 1
             # Establece el error.
             error = e
             # Establece la configuración por defecto.
@@ -239,7 +232,7 @@ class LoggerManager:
             # Indica que está configurado.
             cls.configured = True
             # Retorna la tupla.
-            return status, error
+            return error
     
     @classmethod
     def get_logger(cls, name:Optional[str]=None, logger_type:str='default') -> logging.Logger:
