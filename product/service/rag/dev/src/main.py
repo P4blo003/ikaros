@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------------------
-# Autor: Pablo González García
-# Descripción: Contiene las funcionalidades principales relacionadas
-# con gRPC.
+# Autor: Pablo González García.
+# Descripción: Archivo principal del programa. Contiene la
+# lógica principal.
 # ------------------------------------------------------------------------------------------
 
 
@@ -9,12 +9,8 @@
 # MÓDULOS
 # ------------------------------
 
-# Estándar:
+# Estándr:
 import sys
-from typing import (Optional)
-
-# Internos:
-from core.lifecycle import (ApplicationLifeCycle)
 
 
 # ------------------------------
@@ -23,27 +19,25 @@ from core.lifecycle import (ApplicationLifeCycle)
 
 def main() -> int:
     """
-    Función principal del programa.
+    Función principal del programa. Ejecuta la lógica de negocio y 
+    gestiona posibles errores.
 
     Returns:
-        int: El estado de la ejecución (0 = éxito, >0 = error).
+        int: Código de ejecución del programa.
     """
     # -- Lógica -- #
 
     # Try-Except para manejo de errores.
     try:
-        # Inicia el ciclo de vida de la aplicación.
-        with ApplicationLifeCycle().managed_context() as (app):
-            
-            while not app.shutdown_requested:
 
-                pass
-        
         # Retorna éxito.
         return 0
 
     # Si ocurre algún error.
     except Exception as e:
+        # Imprime el error.
+        print(f"ERROR: Something ocurred during main execution: {e}")
+
         # Retorna error.
         return 1
 
@@ -52,22 +46,20 @@ def main() -> int:
 # LÓGICA
 # ------------------------------
 
-# Comprueba como si se esta ejecutando como script.
+# Entrada principal del programa.
 if __name__ == "__main__":
-
-
+    
     # Try-Except para manejo de errores.
     try:
         # Ejecuta la función principal.
         status:int = main()
 
-        # Finaliza el programa.
+        # Finaliza la ejecución con el código de estado.
         sys.exit(status)
 
     # Si ocurre algún error.
     except Exception as e:
         # Imprime el error.
-        print(f"Fatal Error: {e}")
-
-        # Finaliza el programa.
-        sys.exit(2)
+        print(f"FATAL ERROR: An unhandled exception occurred during main execution: {e}")
+        # Finaliza la jecución.
+        sys.exit(-1)
