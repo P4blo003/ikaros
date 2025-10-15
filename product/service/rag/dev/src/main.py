@@ -9,8 +9,13 @@
 # MÓDULOS
 # ------------------------------
 
-# Estándr:
+# Estánadar:
 import sys
+from typing import (List, Optional)
+
+# Internos:
+from common.log import LoggerManager
+from core.context.lifecycle import LifecycleManager
 
 
 # ------------------------------
@@ -29,7 +34,13 @@ def main() -> int:
 
     # Try-Except para manejo de errores.
     try:
+        # Inicializa el logging.
+        LoggerManager.setup_config()
 
+        # Inicializa el gestor del ciclo de vida.
+        with LifecycleManager().managed_context() as context:
+            pass
+    
         # Retorna éxito.
         return 0
 
